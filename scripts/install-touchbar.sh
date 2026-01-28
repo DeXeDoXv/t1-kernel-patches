@@ -242,7 +242,7 @@ install_dkms_drivers() {
 # Helper to install single DKMS driver
 install_dkms_driver() {
     local driver_name="$1"
-    local driver_dir="$PROJECT_ROOT/drivers/$driver_name-src"
+    local driver_dir="$PROJECT_ROOT/drivers/$driver_name"
     
     if [[ ! -d "$driver_dir" ]]; then
         log_error "Driver directory not found: $driver_dir"
