@@ -1,16 +1,17 @@
-# Makefile for tiny-dfr userspace daemon
-# SPDX-License-Identifier: MIT
-
 CC ?= gcc
-CFLAGS ?= -Wall -Wextra -O2
-PREFIX ?= /usr/local
+CFLAGS ?= -Wall -Wextra -O2 -fPIC
+LDFLAGS ?= 
+LIBS ?= 
 
-# Sources
+PREFIX ?= /usr/local
+BINDIR = $(PREFIX)/bin
+
+TARGET = tiny-dfr
 SOURCES = tiny-dfr.c
 OBJECTS = $(SOURCES:.c=.o)
-TARGET = tiny-dfr
 
-# Targets
+.PHONY: all install uninstall clean
+
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
@@ -20,10 +21,10 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 install: $(TARGET)
-	install -D -m 755 $(TARGET) $(PREFIX)/bin/$(TARGET)
+	install -D -m 755 $(TARGET) $(DESTDIR)$(BINDIR)/$(TARGET)
 
 uninstall:
-	rm -f $(PREFIX)/bin/$(TARGET)
+	rm -f $(DESTDIR)$(BINDIR)/$(TARGET)
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)

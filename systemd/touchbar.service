@@ -1,0 +1,41 @@
+[Unit]
+Description=Apple T1 Touch Bar Display Function Row daemon
+Documentation=https://github.com/DeXeDoXv/t1-kernel-patches
+After=multi-user.target
+Wants=systemd-udev-settle.service
+After=systemd-udev-settle.service
+
+# Only start if T1 iBridge drivers are loaded
+ConditionPathExists=/sys/bus/hid/drivers/apple-ibridge
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tiny-dfr
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tiny-dfr
+
+# Run as root to access HID devices
+User=root
+Group=root
+
+# Security and sandboxing
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+PrivateDevices=false
+PrivateTmp=true
+ReadWritePaths=/dev /sys /proc /run
+
+# Device access
+DevicePolicy=closed
+DeviceAllow=/dev/hidraw* rw
+DeviceAllow=char-input rw
+
+[Install]
+WantedBy=multi-user.target

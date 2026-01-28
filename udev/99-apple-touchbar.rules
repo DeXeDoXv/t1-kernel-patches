@@ -1,24 +1,45 @@
-# Apple Touch Bar udev rules
+# Apple T1 iBridge udev rules
+# Enables unprivileged access to Touch Bar HID devices and framebuffer
 # SPDX-License-Identifier: GPL-2.0
-#
-# Dynamically assign permissions to Apple Touch Bar and iBridge devices
-# Allows unprivileged access to HID devices for tiny-dfr userspace daemon
 
-# Apple iBridge (T1 chip)
+# Apple iBridge USB device (T1 chip)
 SUBSYSTEM=="usb", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="8600", \
-  MODE="0666", TAG="uaccess"
+  OWNER="root", GROUP="input", MODE="0664", TAG="uaccess"
 
-# Touch Bar hidraw device (post-probe)
-KERNEL=="hidraw*", ATTRS{phys}=="*iBridge*", \
-  MODE="0666", TAG="uaccess"
+# Apple iBridge HID device
+SUBSYSTEM=="hid", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="8600", \
+  OWNER="root", GROUP="input", MODE="0664", TAG="uaccess"
 
-# Ambient Light Sensor hidraw device
-KERNEL=="hidraw*", ATTRS{name}=="*ALS*", \
-  MODE="0666", TAG="uaccess"
+# Touch Bar HID report device (hidraw)
+KERNEL=="hidraw*", \
+  SUBSYSTEMS=="hid", \
+  ATTRS{phys}=="*iBridge*", \
+  GROUP="input", MODE="0660", TAG="uaccess"
 
-# Generic Apple HID devices
-SUBSYSTEM=="hid", ATTRS{idVendor}=="05ac", \
+# Touch Bar HID report device by product
+KERNEL=="hidraw*", \
+  SUBSYSTEMS=="usb", \
+  ATTRS{idVendor}=="05ac", \
+  ATTRS{idProduct}=="8600", \
+  GROUP="input", MODE="0660", TAG="uaccess"
+
+# Apple iBridge driver bridge device
+KERNEL=="apple*", SUBSYSTEM=="hid", \
+  GROUP="input", MODE="0660", TAG="uaccess"
+
+# HID input devices on Apple T1
+SUBSYSTEM=="input", ATTRS{id/vendor}=="05ac", ATTRS{id/product}=="8600", \
+  GROUP="input", MODE="0660", TAG="uaccess"
+
+# Generic hidraw for iBridge
+SUBSYSTEM=="hidraw", KERNEL=="hidraw*", \
+  PROGRAM="/bin/sh -c 'for dev in /sys$DEVPATH/device/driver/../*; do [ \"$(cat $$dev/idVendor 2>/dev/null)\" = \"05ac\" ] && [ \"$(cat $$dev/idProduct 2>/dev/null)\" = \"8600\" ] && echo matched; done'", \
   TAG="uaccess"
 
-# Enable systemd-logind integration
-TAG+="uaccess"
+# Touchpad / trackpad
+KERNEL=="event*", ATTRS{name}=="*[Tt]ouch*[Bb]ar*", \
+  GROUP="input", MODE="0660", TAG="uaccess"
+
+# Allow Apple device access through uaccess tag for systemd-logind
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="8600", TAG="uaccess"
+SUBSYSTEMS=="hid", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="8600", TAG="uaccess"
