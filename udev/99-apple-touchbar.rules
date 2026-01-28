@@ -1,0 +1,24 @@
+# Apple Touch Bar udev rules
+# SPDX-License-Identifier: GPL-2.0
+#
+# Dynamically assign permissions to Apple Touch Bar and iBridge devices
+# Allows unprivileged access to HID devices for tiny-dfr userspace daemon
+
+# Apple iBridge (T1 chip)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="05ac", ATTRS{idProduct}=="8600", \
+  MODE="0666", TAG="uaccess"
+
+# Touch Bar hidraw device (post-probe)
+KERNEL=="hidraw*", ATTRS{phys}=="*iBridge*", \
+  MODE="0666", TAG="uaccess"
+
+# Ambient Light Sensor hidraw device
+KERNEL=="hidraw*", ATTRS{name}=="*ALS*", \
+  MODE="0666", TAG="uaccess"
+
+# Generic Apple HID devices
+SUBSYSTEM=="hid", ATTRS{idVendor}=="05ac", \
+  TAG="uaccess"
+
+# Enable systemd-logind integration
+TAG+="uaccess"

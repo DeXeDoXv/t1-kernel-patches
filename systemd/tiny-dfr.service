@@ -1,0 +1,24 @@
+[Unit]
+Description=Apple Touch Bar display manager
+Documentation=https://github.com/DeXeDoXv/t1-kernel-patches
+After=multi-user.target
+ConditionPathExists=/sys/bus/hid/drivers/apple-ib-tb
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tiny-dfr
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tiny-dfr
+
+# Security and sandboxing
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/dev /sys /proc /run
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

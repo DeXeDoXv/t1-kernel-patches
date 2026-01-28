@@ -1,0 +1,74 @@
+The iBridge device provides access to several devices, including:
+- the Touch Bar
+- the iSight webcam
+- the light sensor
+- the fingerprint sensor
+
+This driver provides the core support for managing the iBridge device
+and the access to the underlying devices. In particular, the
+functionality for the touch bar and light sensor is exposed via USB HID
+interfaces, and on devices with the T1 chip one of the HID devices is
+used for both functions. So this driver creates virtual HID devices, one
+per top-level report collection on each HID device (for a total of 3
+virtual HID devices). The sub-drivers then bind to these virtual HID
+devices.
+
+This way the Touch Bar and ALS drivers can be kept in their own modules,
+while at the same time making them look very much like as if they were
+connected to the real HID devices. And those drivers then work (mostly)
+without further changes on MacBooks with the T2 chip that don't need
+this driver.
+
+Signed-off-by: Ronald Tschalär <ronald@xxxxxxxxxxxxx>
+---
+drivers/hid/Kconfig | 16 +
+drivers/hid/Makefile | 1 +
+drivers/hid/apple-ibridge.c | 682 ++++++++++++++++++++++++++++++++++++
+drivers/hid/apple-ibridge.h | 15 +
+drivers/hid/hid-ids.h | 1 +
+drivers/hid/hid-quirks.c | 3 +
+6 files changed, 718 insertions(+)
+create mode 100644 drivers/hid/apple-ibridge.c
+create mode 100644 drivers/hid/apple-ibridge.h
+
+diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+index 09fa75a2b289e..579c45c3e36e5 100644
+--- a/drivers/hid/Kconfig
++++ b/drivers/hid/Kconfig
+@@ -136,6 +136,22 @@ config HID_APPLE
+Say Y here if you want support for keyboards of Apple iBooks, PowerBooks,
+MacBooks, MacBook Pros and Apple Aluminum.
+
++config HID_APPLE_IBRIDGE
++ tristate "Apple iBridge"
++ depends on ACPI
++ depends on USB_HID
++ depends on X86 || COMPILE_TEST
++ imply HID_SENSOR_HUB
++ imply HID_SENSOR_ALS
++ help
++ This module provides the core support for the Apple T1 chip found
++ on 2016 and 2017 MacBookPro's, also known as the iBridge. The drivers
++ for the Touch Bar (apple-touchbar) and light sensor (hid-sensor-hub
++ and hid-sensor-als) need to be enabled separately.
++
++ To compile this driver as a module, choose M here: the
++ module will be called apple-ibridge.
++
+config HID_APPLEIR
+tristate "Apple infrared receiver"
+depends on (USB_HID)
+diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
+index 014d21fe7dac6..d29a3934bfaa9 100644
+--- a/drivers/hid/Makefile
++++ b/drivers/hid/Makefile
+@@ -26,6 +26,7 @@ obj-$(CONFIG_HID_ACCUTOUCH) += hid-accutouch.o
+obj-$(CONFIG_HID_ALPS) += hid-alps.o
+obj-$(CONFIG_HID_ACRUX) += hid-axff.o
+obj-$(CONFIG_HID_APPLE) += hid-apple.o
++obj-$(CONFIG_HID_APPLE_IBRIDGE) += apple-ibridge.o
+obj-$(CONFIG_HID_APPLEIR) += hid-apireir.o
+obj-$(CONFIG_HID_CREATIVE_SB0540) += hid-creative-sb0540.o
+obj-$(CONFIG_HID_ASUS) += hid-asus.o
+--
+2.26.2

@@ -1,0 +1,54 @@
+This driver enables basic touch bar functionality: enabling it, switching
+between modes on FN key press, and dimming and turning the display
+off/on when idle/active.
+
+Signed-off-by: Ronald Tschalär <ronald@xxxxxxxxxxxxx>
+---
+drivers/hid/Kconfig | 10 +
+drivers/hid/Makefile | 1 +
+drivers/hid/apple-touchbar.c | 1523 ++++++++++++++++++++++++++++++++++
+3 files changed, 1534 insertions(+)
+create mode 100644 drivers/hid/apple-touchbar.c
+
+diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+index 579c45c3e36e5..1609a60d65cc3 100644
+--- a/drivers/hid/Kconfig
++++ b/drivers/hid/Kconfig
+@@ -141,6 +141,7 @@ config HID_APPLE_IBRIDGE
+depends on ACPI
+depends on USB_HID
+depends on X86 || COMPILE_TEST
++ imply HID_APPLE_TOUCHBAR
+imply HID_SENSOR_HUB
+imply HID_SENSOR_ALS
+help
+@@ -152,6 +153,15 @@ config HID_APPLE_IBRIDGE
+To compile this driver as a module, choose M here: the
+module will be called apple-ibridge.
+
++config HID_APPLE_TOUCHBAR
++ tristate "Apple Touch Bar"
++ help
++ Say Y here if you want support for the Touch Bar on recent
++ MacBook Pros.
++
++ To compile this driver as a module, choose M here: the
++ module will be called apple-touchbar.
++
+config HID_APPLEIR
+tristate "Apple infrared receiver"
+depends on (USB_HID)
+diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
+index d29a3934bfaa9..b82a8256785da 100644
+--- a/drivers/hid/Makefile
++++ b/drivers/hid/Makefile
+@@ -27,6 +27,7 @@ obj-$(CONFIG_HID_ALPS) += hid-alps.o
+obj-$(CONFIG_HID_ACRUX) += hid-axff.o
+obj-$(CONFIG_HID_APPLE) += hid-apple.o
+obj-$(CONFIG_HID_APPLE_IBRIDGE) += apple-ibridge.o
++obj-$(CONFIG_HID_APPLE_TOUCHBAR) += apple-touchbar.o
+obj-$(CONFIG_HID_APPLEIR) += hid-apireir.o
+obj-$(CONFIG_HID_CREATIVE_SB0540) += hid-creative-sb0540.o
+obj-$(CONFIG_HID_ASUS) += hid-asus.o
+--
+2.26.2

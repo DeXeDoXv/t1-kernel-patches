@@ -1,0 +1,67 @@
+name: Feature Detection Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  feature-detect:
+    name: Test Feature Detection
+    runs-on: ubuntu-latest
+    
+    container:
+      image: ubuntu:22.04
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y build-essential linux-headers-$(uname -r) git
+      
+      - name: Test feature detection script
+        run: |
+          chmod +x scripts/detect-kernel-features.sh
+          ./scripts/detect-kernel-features.sh /lib/modules/$(uname -r)/build
+      
+      - name: Generate C header
+        run: |
+          OUTPUT_FORMAT=c ./scripts/detect-kernel-features.sh /lib/modules/$(uname -r)/build
+      
+      - name: Generate Make vars
+        run: |
+          OUTPUT_FORMAT=make ./scripts/detect-kernel-features.sh /lib/modules/$(uname -r)/build
+      
+      - name: Generate JSON
+        run: |
+          OUTPUT_FORMAT=json ./scripts/detect-kernel-features.sh /lib/modules/$(uname -r)/build
+  
+  shellcheck:
+    name: Shell Script Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+      
+      - name: Lint all shell scripts
+        run: |
+          find . -name "*.sh" -type f | xargs shellcheck || true
+  
+  readme:
+    name: Verify Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Check README exists
+        run: |
+          [[ -f README.md ]] || exit 1
+          grep -q "Installation" README.md || exit 1
+          grep -q "Verification" README.md || exit 1

@@ -1,0 +1,57 @@
+# Build artifacts
+*.o
+*.ko
+*.so
+*.mod
+*.mod.c
+*.symvers
+*.order
+*.bak
+*.tmp
+*.swp
+*~
+
+# Build directories
+build/
+dist/
+.build/
+
+# DKMS artifacts
+/usr/src/*/
+
+# Temporary files
+*.cache
+*.log
+/tmp/
+/temp/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.Thumbs.db
+.desktop
+
+# Cache
+.cache/
+*.cache
+
+# Environment
+.env
+.env.local
+
+# Feature detection outputs
+config-detected.h
+config-detected.mk
+config-detected.json
+config-detected.sh

@@ -1,0 +1,48 @@
+# Apple iBridge DKMS Makefile
+# Kernel-agnostic build with feature detection
+#
+# SPDX-License-Identifier: GPL-2.0
+
+# Detect kernel build environment
+KERNEL_BUILD_DIR ?= /lib/modules/$(shell uname -r)/build
+KERNEL_SOURCE_DIR ?= /lib/modules/$(shell uname -r)/source
+
+# Feature detection via adaptive compilation
+ifdef CONFIG_HID_PARSE_REPORT_EXPORTED
+  EXTRA_CFLAGS += -DCONFIG_HID_PARSE_REPORT_EXPORTED
+endif
+
+ifdef CONFIG_MFD_CORE_AVAILABLE
+  EXTRA_CFLAGS += -DCONFIG_MFD_CORE_AVAILABLE
+endif
+
+ifdef CONFIG_ACPI_AVAILABLE
+  EXTRA_CFLAGS += -DCONFIG_ACPI_AVAILABLE
+endif
+
+# Fallback for missing symbols
+ifdef CONFIG_UPSTREAM
+  EXTRA_CFLAGS += -DUPSTREAM
+else
+  EXTRA_CFLAGS += -DNO_UPSTREAM_SYMBOLS
+endif
+
+# Source files
+apple-ibridge-objs := apple-ibridge.o
+
+# Module definition
+obj-m := apple-ibridge.o
+
+# Build command
+all:
+	@echo "Building apple-ibridge for kernel $(shell uname -r)"
+	make -C $(KERNEL_BUILD_DIR) M=$(PWD) EXTRA_CFLAGS="$(EXTRA_CFLAGS)" modules
+
+clean:
+	make -C $(KERNEL_BUILD_DIR) M=$(PWD) clean
+
+install: all
+	make -C $(KERNEL_BUILD_DIR) M=$(PWD) modules_install
+	depmod -a
+
+.PHONY: all clean install
