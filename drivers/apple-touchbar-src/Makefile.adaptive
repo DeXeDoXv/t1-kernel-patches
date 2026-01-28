@@ -1,0 +1,47 @@
+# Makefile.adaptive - Kernel version and feature detection
+# This Makefile adapts compilation flags based on kernel features
+# SPDX-License-Identifier: GPL-2.0
+
+KERNEL_VERSION := $(shell uname -r | cut -d. -f1)
+KERNEL_PATCHLEVEL := $(shell uname -r | cut -d. -f2)
+
+# Feature detection: Check exported kernel symbols
+HAS_HID_PARSE_REPORT := $(shell grep -q "hid_parse_report" /lib/modules/$(KERNELRELEASE)/build/Module.symvers 2>/dev/null && echo 1 || echo 0)
+HAS_HID_CONNECT := $(shell grep -q "hid_connect" /lib/modules/$(KERNELRELEASE)/build/Module.symvers 2>/dev/null && echo 1 || echo 0)
+
+# Build flags based on kernel features
+ccflags-y :=
+
+# Handle hid_parse_report availability
+ifeq ($(HAS_HID_PARSE_REPORT),1)
+    ccflags-y += -DHAVE_HID_PARSE_REPORT
+endif
+
+# Handle hid_connect API
+ifeq ($(HAS_HID_CONNECT),1)
+    ccflags-y += -DHAVE_HID_CONNECT
+endif
+
+# Kernel version detection for API compatibility
+ifeq ($(shell [ $(KERNEL_VERSION) -ge 6 ] && [ $(KERNEL_PATCHLEVEL) -ge 15 ] && echo 1 || echo 0),1)
+    ccflags-y += -DKERNEL_6_15_PLUS
+    # Kernel 6.15+ API changes - input_event structure changes
+    ccflags-y += -DHID_DEVICE_INRANGE_MEMBER
+endif
+
+ifeq ($(shell [ $(KERNEL_VERSION) -ge 5 ] && [ $(KERNEL_PATCHLEVEL) -ge 15 ] && echo 1 || echo 0),1)
+    ccflags-y += -DKERNEL_5_15_PLUS
+endif
+
+ifeq ($(shell [ $(KERNEL_VERSION) -ge 5 ] && [ $(KERNEL_PATCHLEVEL) -ge 10 ] && echo 1 || echo 0),1)
+    ccflags-y += -DKERNEL_5_10_PLUS
+endif
+
+# Enable debug info by default for development
+ccflags-y += -DDEBUG
+
+# Optimization and warnings
+ccflags-y += -Wall -Wextra -Wno-unused-parameter
+
+$(info Kernel version: $(KERNEL_VERSION).$(KERNEL_PATCHLEVEL))
+$(info Detected features: HID_PARSE=$(HAS_HID_PARSE_REPORT) HID_CONNECT=$(HAS_HID_CONNECT))

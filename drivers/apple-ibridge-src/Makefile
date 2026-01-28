@@ -1,5 +1,8 @@
 obj-m += apple-ibridge.o
 
+# Include adaptive feature detection Makefile
+-include $(PWD)/Makefile.adaptive
+
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
